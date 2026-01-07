@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { Moon, Clock, BedDouble, Sun } from 'lucide-react';
 
 interface SleepScoreCardProps {
-    score: number | null;
+    score?: number | null;
     duration?: number;
     bedTime?: string;
     wakeTime?: string;
@@ -94,9 +94,9 @@ export default function SleepScoreCard({
                         {/* Score text */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
                             <span className={`text-5xl font-bold ${scoreColor}`}>
-                                {score !== null ? Math.round(score) : '—'}
+                                {score != null ? Math.round(score) : '—'}
                             </span>
-                            {score !== null && (
+                            {score != null && (
                                 <span className="text-night-400 text-sm mt-1">/ 100</span>
                             )}
                         </div>

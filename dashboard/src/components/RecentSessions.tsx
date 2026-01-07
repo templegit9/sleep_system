@@ -7,7 +7,7 @@ import { useApi } from '@/hooks/useApi';
 interface Session {
     id: string;
     date: string;
-    duration_minutes: number;
+    duration_minutes: number | null;
     efficiency_score: number | null;
 }
 
@@ -50,7 +50,8 @@ export default function RecentSessions() {
         });
     };
 
-    const formatDuration = (minutes: number) => {
+    const formatDuration = (minutes: number | null) => {
+        if (!minutes) return '—';
         const hours = Math.floor(minutes / 60);
         const mins = minutes % 60;
         return `${hours}h ${mins}m`;

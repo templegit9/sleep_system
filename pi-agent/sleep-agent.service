@@ -1,0 +1,15 @@
+[Unit]
+Description=Sleep System Audio Agent
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/sleep-agent
+ExecStart=/usr/bin/python3 /home/pi/sleep-agent/audio_capture.py
+Restart=always
+RestartSec=10
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

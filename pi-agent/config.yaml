@@ -1,0 +1,18 @@
+# Sleep System - Raspberry Pi Agent Configuration
+
+# Server connection
+server_url: "http://192.168.1.100:3001"  # Update with your Proxmox server IP
+pi_id: "bedroom-pi"
+
+# Audio capture settings
+audio:
+  sample_rate: 16000      # 16kHz is sufficient for voice/snore detection
+  channels: 1             # Mono audio
+  chunk_size: 1024        # PyAudio buffer size
+  chunk_duration_seconds: 60  # Send audio every 60 seconds
+  device_index: null      # null = auto-detect USB mic
+
+# Local buffer settings (for network resilience)
+buffer:
+  max_files: 100          # Maximum buffered files before warning
+  retry_interval: 30      # Seconds between retry attempts

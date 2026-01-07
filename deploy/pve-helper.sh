@@ -2,8 +2,6 @@
 # =============================================================================
 # Sleep System - Complete Proxmox Setup Helper
 # Run this on your Proxmox host (pve)
-# 
-# Usage: bash <(curl -s https://raw.githubusercontent.com/templegit9/sleep_system/main/deploy/pve-helper.sh)
 # =============================================================================
 
 set -e
@@ -38,18 +36,32 @@ if pct status $CTID &> /dev/null; then
     fi
 fi
 
-# Download template if needed
-TEMPLATE="debian-12-standard_12.2-1_amd64.tar.zst"
-if [ ! -f "/var/lib/vz/template/cache/$TEMPLATE" ]; then
+# Find or download Debian 12 template
+echo "📥 Looking for Debian 12 template..."
+pveam update
+
+# Check for existing template first
+TEMPLATE=$(ls /var/lib/vz/template/cache/ 2>/dev/null | grep -i "debian-12" | head -1)
+
+if [ -z "$TEMPLATE" ]; then
     echo "📥 Downloading Debian 12 template..."
-    pveam update
-    pveam download local $TEMPLATE
+    # List available templates and find debian-12
+    AVAILABLE=$(pveam available | grep -i "debian-12" | head -1 | awk '{print $2}')
+    if [ -z "$AVAILABLE" ]; then
+        echo "❌ Could not find Debian 12 template. Available templates:"
+        pveam available | grep -i debian
+        exit 1
+    fi
+    pveam download local "$AVAILABLE"
+    TEMPLATE="$AVAILABLE"
 fi
+
+echo "✅ Using template: $TEMPLATE"
 
 # Create container if it doesn't exist
 if ! pct status $CTID &> /dev/null; then
     echo "📦 Creating container $CTID..."
-    pct create $CTID local:vztmpl/$TEMPLATE \
+    pct create $CTID "local:vztmpl/$TEMPLATE" \
         --hostname $CT_NAME \
         --memory $CT_MEMORY \
         --cores $CT_CORES \
@@ -66,7 +78,7 @@ pct start $CTID
 sleep 5
 
 # Get container IP
-CT_IP=$(pct exec $CTID -- hostname -I | awk '{print $1}')
+CT_IP=$(pct exec $CTID -- hostname -I 2>/dev/null | awk '{print $1}')
 echo "📡 Container IP: $CT_IP"
 
 # Install dependencies inside container
@@ -139,6 +151,9 @@ pct exec $CTID -- bash -c "systemctl daemon-reload && systemctl enable sleep-api
 # Wait for service to start
 sleep 3
 
+# Get IP again in case DHCP assigned it
+CT_IP=$(pct exec $CTID -- hostname -I 2>/dev/null | awk '{print $1}')
+
 # Verify
 echo ""
 echo "=============================================="
@@ -149,9 +164,9 @@ echo "🌐 API URL: http://$CT_IP:3001"
 echo "🔑 API Key: $API_KEY"
 echo "🔑 Pi Key:  $PI_KEY"
 echo ""
-echo "Test with: curl http://$CT_IP:3001/api/ping"
+echo "Test: curl http://$CT_IP:3001/api/ping"
 echo ""
-echo "📋 Update your Pi config with:"
+echo "📋 Update Pi config with:"
 echo "   SLEEP_SERVER=\"http://$CT_IP:3001\""
 echo ""
 echo "View logs: pct exec $CTID -- journalctl -u sleep-api -f"

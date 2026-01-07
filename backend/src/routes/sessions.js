@@ -116,7 +116,11 @@ router.post('/start', async (req, res) => {
         const result = await db.query(
             `INSERT INTO sleep_sessions (id, date, bed_time) 
        VALUES ($1, $2, NOW()) 
-       ON CONFLICT (date) DO UPDATE SET bed_time = NOW()
+       ON CONFLICT (date) DO UPDATE SET 
+         bed_time = NOW(),
+         wake_time = NULL,
+         efficiency_score = NULL,
+         duration_minutes = NULL
        RETURNING *`,
             [id, today]
         );

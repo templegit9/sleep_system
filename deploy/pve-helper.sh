@@ -12,6 +12,7 @@ CT_MEMORY=1024
 CT_CORES=2
 CT_DISK=16
 REPO_URL="https://github.com/templegit9/sleep_system.git"
+TEMPLATE="debian-12-standard_12.12-1_amd64.tar.zst"
 
 echo "=============================================="
 echo "🌙 Sleep System - Proxmox LXC Setup"
@@ -36,24 +37,11 @@ if pct status $CTID &> /dev/null; then
     fi
 fi
 
-# Find or download Debian 12 template
-echo "📥 Looking for Debian 12 template..."
-pveam update
-
-# Check for existing template first
-TEMPLATE=$(ls /var/lib/vz/template/cache/ 2>/dev/null | grep -i "debian-12" | head -1)
-
-if [ -z "$TEMPLATE" ]; then
+# Download template if needed
+if [ ! -f "/var/lib/vz/template/cache/$TEMPLATE" ]; then
     echo "📥 Downloading Debian 12 template..."
-    # List available templates and find debian-12
-    AVAILABLE=$(pveam available | grep -i "debian-12" | head -1 | awk '{print $2}')
-    if [ -z "$AVAILABLE" ]; then
-        echo "❌ Could not find Debian 12 template. Available templates:"
-        pveam available | grep -i debian
-        exit 1
-    fi
-    pveam download local "$AVAILABLE"
-    TEMPLATE="$AVAILABLE"
+    pveam update
+    pveam download local $TEMPLATE
 fi
 
 echo "✅ Using template: $TEMPLATE"

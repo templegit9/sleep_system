@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Moon, Mic, Thermometer, Droplets, Wind, TrendingUp, Calendar, Settings } from 'lucide-react';
+import { Moon, TrendingUp, Settings } from 'lucide-react';
 import SleepScoreCard from '@/components/SleepScoreCard';
 import AudioVisualization from '@/components/AudioVisualization';
 import EnvironmentCard from '@/components/EnvironmentCard';
@@ -12,8 +12,8 @@ import { useWebSocket } from '@/hooks/useWebSocket';
 import { useApi } from '@/hooks/useApi';
 
 export default function Home() {
-    const { isConnected, lastMessage, audioLevel, environmentData } = useWebSocket();
-    const { todaySession, stats, isLoading } = useApi();
+    const { isConnected, audioLevel, environmentData } = useWebSocket();
+    const { todaySession, stats } = useApi();
     const [currentTime, setCurrentTime] = useState(new Date());
 
     useEffect(() => {
@@ -68,10 +68,10 @@ export default function Home() {
                 {/* Left Column - Sleep Score & Controls */}
                 <div className="col-span-12 lg:col-span-4 space-y-6">
                     <SleepScoreCard
-                        score={todaySession?.efficiency_score || null}
-                        duration={todaySession?.duration_minutes}
-                        bedTime={todaySession?.bed_time}
-                        wakeTime={todaySession?.wake_time}
+                        score={todaySession?.efficiency_score ?? undefined}
+                        duration={todaySession?.duration_minutes ?? undefined}
+                        bedTime={todaySession?.bed_time ?? undefined}
+                        wakeTime={todaySession?.wake_time ?? undefined}
                     />
 
                     <SessionControls
